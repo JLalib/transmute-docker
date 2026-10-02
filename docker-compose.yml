@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  transmute:
+    image: ghcr.io/transmute-app/transmute:latest
+    container_name: transmute
+    restart: unless-stopped
+    ports:
+      - "3313:3313"
+    environment:
+      # Advertencia: JWT_SECRET debe configurarse en tu archivo .env o entorno
+      # ¡Nunca uses valores por defecto en producción!
+      - JWT_SECRET=${JWT_SECRET}
+      - APP_URL=${APP_URL:-http://localhost:3313}
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=3313
+    volumes:
+      - transmute_data:/app/data
+      # Opcional: monta una hoja de estilos personalizada para salida Markdown/PDF.
+      # - ./pdf-custom.css:/app/data/pdf/custom.css:ro
+    healthcheck:
+      test:
+        - "CMD"
+        - "wget"
+        - "-q"
+        - "-O"
+        - "/dev/null"
+        - "--tries=1"
+        - "http://localhost:3313/api/health/ready"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  transmute_data:
